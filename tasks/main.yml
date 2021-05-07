@@ -1,15 +1,15 @@
 ---
 # tasks file for dns
 - name: install software
-  yum:
+  ansible.builtin.yum:
     name: 'dnsmasq'
     state: latest
 - name: Add Host to DNS
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/dnsmasq_hosts.conf
     line: "{{ item }}"
     create: yes
-  with_items:
+  loop:
     - "192.168.254.10 master master.example.com"
     - "192.168.254.11 git git.example.com"
     - "192.168.254.12 base0 base0.example.com"
@@ -18,25 +18,25 @@
     - "192.168.254.13 b1 b1.example.com"
     - "192.168.254.99 ansible ansible.example.com"
 - name: copy config
-  template:
+  ansible.builtin.template:
     src: "dnsmasq-{{ item }}.j2"
     dest: "/etc/dnsmasq.d/{{ item }}.conf"
   with_items:
     - dns
 - name: enable and start service
-  service:
+  ansible.builtin.service:
     name: '{{ item }}'
     enabled: yes
     state: started
-  with_items:
+  loop:
     - dnsmasq
 - name: enable firewall
-  firewalld:
+  ansible.posix.firewalld:
     service: "{{ item }}"
     permanent: true
     state: enabled
     immediate: yes
-  with_items:
+  loop:
     - dns
 
 
